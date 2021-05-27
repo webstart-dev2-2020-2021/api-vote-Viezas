@@ -1,12 +1,52 @@
 const { json } = require("body-parser")
 const User = require("../models/user")
+const nodemailer = require('nodemailer')
+const dotenv = require('dotenv').config()
 
 module.exports = {
   async signup(req, res) {  //Signup
     const {name, password, email} = req.body
+    if(!name || !password || !email)
+    {
+      return res.status('401').json({
+        success : false,
+        message : "Les champs : name, password et email sont obligatoires !"
+      })
+    }
+
     try {
       const newUser = new User({name, password, email})
+      newUser.setPassword(password)
       const savedUser = await newUser.save()
+      
+      const transporter = nodemailer.createTransport({
+        service : 'Gmail',
+        auth : {
+          user : process.env.MAIL_USER,
+          pass : process.env.MAIL_PASSWORD
+        }
+      })
+
+      let mailOptions = {
+        from : 'api.vote@gmail.com',
+        to : email,
+        subject : 'Account created',
+        text : `
+          Hello ${name} !
+          If you received this email then your account have been created successfully ! 
+          Congratulation ! You are now part of the team with many other people around the world !
+        ` 
+      }
+
+      transporter.sendMail(mailOptions, function(err, data){
+        if (err) {
+          console.log('An error accurs : ', err)
+        }
+        else{
+          console.log('Email send !')
+        }
+      })
+
       return res.status(201).send({
         sucess: true,
         name: savedUser.name,
@@ -14,18 +54,45 @@ module.exports = {
       })
     } catch (error) {
       console.log(error);
-      return res.status(500).send('Erreur du seveur')
+      return res.status(500).json({
+        success : false,
+        message : "Le name ou l'adresse email existe déjà !"
+      })
     }
   },
 
-  signin(req, res) {  //Signin
-    return res.status(201).send({
-      success: true,
-      user: {
-        name: "toto",
-        _id: "1",
-      }
-    })
-  }
+  async signin(req, res) {  //Signin
+    const {name, password} = req.body
+    if(!name || !password)
+    {
+      return res.status('401').json({
+        success : false,
+        message : "Les champs : name et password sont obligatoires !"
+      })
+    }
 
+    try {
+      const user = await User.findOne({name})
+      if(!user || !user.passwordIsValid(password))
+      {
+        res.status('401').json({
+          success : false,
+          message : "Le nom d'utilisateur ou le mot de passe est invalid !"
+        })
+        throw new Error("Erreur ! Le nom d'utilisateur ou le mot de passe est invalid !")
+      }
+      const jwt = user.generateJWT()
+      return res.status('200').json({
+        success : true,
+        jwt
+      })
+
+    } catch (error) {
+      console.error('erreur dans le post /signin : ', error)
+      return res.status('500').json({
+        success : false,
+        message : "Il semblerait que nous rencontrons un problème ..."
+      })
+    }
+  }
 }
