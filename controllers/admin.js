@@ -3,7 +3,7 @@ const User = require("../models/user")
 
 module.exports = {
   async users(req, res) { //Users
-    const users = await User.find()
+    const users = await User.find({}, 'name isAdmin')   //Récupération des champs : name, isAdmin des utilisateurs 
     return res.status(201).send({
       success: true,
       users : users
@@ -12,16 +12,19 @@ module.exports = {
 
   async user(req, res) {  //User
     const { id } = req.params
-    const user = await User.findById(id)
-    if (!user) {
+    try{
+      const user = await User.findById(id, 'name isAdmin')
+      return res.status(201).send({
+        success: true,
+        user : user
+      })
+    }
+    catch(error){
+      console.log(error)
       return res.status('401').json({
         success : false,
         message : "L'id fournit est invalid !"
       })
     }
-    return res.status(201).send({
-      success: true,
-      user : user
-    })
   }
 }

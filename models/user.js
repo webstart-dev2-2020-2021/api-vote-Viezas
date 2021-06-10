@@ -15,12 +15,10 @@ const userSchema = new Schema({
     required : true
   },
   hash : {
-    type : String,
-    select: false
+    type : String
   },
   salt : {
-    type : String,
-    select: false
+    type : String
   },
   isAdmin : {
     type : Boolean,
@@ -54,6 +52,7 @@ userSchema.methods.generateJWT = function()
   return jwt.sign({
     _id : this._id,
     name : this.name,
+    isAdmin : this.isAdmin
   }, JWT_SECRET, { expiresIn : '7d' })
 }
 

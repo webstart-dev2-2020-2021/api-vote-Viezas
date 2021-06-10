@@ -5,12 +5,20 @@ const dotenv = require('dotenv').config()
 
 module.exports = {
   async signup(req, res) {  //Signup
+    const mailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     const {name, password, email} = req.body
     if(!name || !password || !email)
     {
       return res.status('401').json({
         success : false,
         message : "Les champs : name, password et email sont obligatoires !"
+      })
+    }
+    
+    if(!mailRegex.test(String(email).toLocaleLowerCase())){
+      return res.status('401').json({
+        success : false,
+        message : "L'adresse email fournit n'est pas conforme !"
       })
     }
 

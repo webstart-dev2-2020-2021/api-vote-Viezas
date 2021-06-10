@@ -6,6 +6,9 @@ const crypto = require('crypto')
 
 const authRouter = require('./routers/auth.js').router
 const adminRouter = require('./routers/admin.js').router
+const voteRouter = require('./routers/vote.js').router
+const authAdmin = require('./middlewares/authAdmin.js')
+const authUser = require('./middlewares/authUser.js')
 const app = express()
 
 const {DB_USER, DB_NAME, DB_PASSWORD} = process.env
@@ -26,6 +29,7 @@ app.use(helmet())
 app.use(express.json())
 
 app.use('/auth/', authRouter)   //Route auth
-app.use('/admin/', adminRouter) //Route admin
+app.use('/admin/', authAdmin, adminRouter) //Route admin
+app.use('/vote/', authUser, voteRouter) //Route vote
 
 app.listen(3000, () => {console.log('Serveur lancé sur le port 3000, bon développement !')})

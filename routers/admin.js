@@ -3,8 +3,6 @@ const controller = require('../controllers/admin.js')
 
 exports.router = (() => {
   const admin = express.Router()
-
-  //Routes
   admin.route('/users/').get(controller.users)    //Users
   admin.route('/users/:id').get(controller.user)  //User
 
