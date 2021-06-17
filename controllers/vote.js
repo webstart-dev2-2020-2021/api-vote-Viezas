@@ -12,7 +12,7 @@ module.exports = {
         message : "Le champ : name est obligatoire !"
       })
     }
-
+    console.log('dans le create');
     try {
       const newVote = new Vote({name})
       const savedVote = await newVote.save()

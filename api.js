@@ -8,7 +8,6 @@ const authRouter = require('./routers/auth.js').router
 const adminRouter = require('./routers/admin.js').router
 const voteRouter = require('./routers/vote.js').router
 const authAdmin = require('./middlewares/authAdmin.js')
-const authUser = require('./middlewares/authUser.js')
 const app = express()
 
 const {DB_USER, DB_NAME, DB_PASSWORD} = process.env
@@ -28,8 +27,15 @@ db.once('open', () => console.log('CONNECTED TO MONGO-DB'))
 app.use(helmet())
 app.use(express.json())
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
+  next();
+});
+
 app.use('/auth/', authRouter)   //Route auth
 app.use('/admin/', authAdmin, adminRouter) //Route admin
-app.use('/vote/', authUser, voteRouter) //Route vote
+app.use('/vote/', voteRouter) //Route vote
 
 app.listen(3000, () => {console.log('Serveur lancé sur le port 3000, bon développement !')})
